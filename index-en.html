@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping List</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Translate button -->
+    <div class="language">
+        <img id="translateBtn" src="img/trad.png" alt="Traduzir" title="Voltar para Português">
+    </div>
+
+    <div class="app-wrapper">
+
+        <img class="logo" src="img/shoppinglist.png" alt="Shopping List">
+
+        <div class="container">
+
+            <div class="input-area">
+                <input type="text" id="itemInput" placeholder="Type an item">
+                <button onclick="addItem()">Add</button>
+            </div>
+
+            <ul id="itemList"></ul>
+
+        </div>
+
+    </div>
+
+    <script src="script-en.js"></script>
+
+</body>
+</html>

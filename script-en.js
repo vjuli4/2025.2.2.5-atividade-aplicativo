@@ -1,9 +1,9 @@
 let db;
 
-// criação do meu banco de dados local (assíncrono)
-const request = indexedDB.open("ShoppingDB", 1); // nome e versão
+// opens the same local database used by the Portuguese page
+// (same name/version -> items are shared between both languages)
+const request = indexedDB.open("ShoppingDB", 1);
 
-// estrutura do banco. tabela -> chave primária -> id incrementado
 request.onupgradeneeded = function (event) {
   db = event.target.result;
   db.createObjectStore("items", {
@@ -12,51 +12,39 @@ request.onupgradeneeded = function (event) {
   });
 };
 
-// banco salvo na variável db
 request.onsuccess = function (event) {
   db = event.target.result;
-  loadItems(); // itens salvos
+  loadItems();
 };
 
-// botão de tradução -> vai para a página em inglês
+// translate button -> goes back to the Portuguese page
 document.getElementById("translateBtn").onclick = function () {
-  window.location.href = "index-en.html";
+  window.location.href = "index.html";
 };
 
-// permite adicionar apertando Enter no campo de texto
+// allows adding an item by pressing Enter
 document.getElementById("itemInput").addEventListener("keypress", function (e) {
   if (e.key === "Enter") addItem();
 });
 
-// função "adicionar item"
+// "add item" function
 function addItem() {
   const input = document.getElementById("itemInput");
-  const name = input.value.trim(); // remove espaços extras para evitar repetição no banco de dados
+  const name = input.value.trim();
 
   if (name === "") return;
 
-  const tx = db.transaction("items", "readwrite"); // alterar ou remover dados
-  const store = tx.objectStore("items"); // acessa item
-  store.add({ name }); // salva item no bd
+  const tx = db.transaction("items", "readwrite");
+  const store = tx.objectStore("items");
+  store.add({ name });
 
-  // arrow function
   tx.oncomplete = () => {
-    input.value = ""; // limpa campo de texto
-    loadItems(); // atualiza a lista
+    input.value = "";
+    loadItems();
   };
 }
 
-
-// função "remover item"
-function removeItem(id) { // recebe id
-  const tx = db.transaction("items", "readwrite"); // abre a transação (para alterar)
-  const store = tx.objectStore("items");
-  store.delete(id); // remove item pelo id
-
-  tx.oncomplete = loadItems; // atualiza lista
-}
-
-// função "editar item"
+// "edit item" function
 function editItem(id, span, editBtn) {
   const currentName = span.textContent;
   const input = document.createElement("input");
@@ -74,7 +62,7 @@ function editItem(id, span, editBtn) {
 
     const tx = db.transaction("items", "readwrite");
     const store = tx.objectStore("items");
-    store.put({ id, name: trimmed }); // atualiza o item existente
+    store.put({ id, name: trimmed }); // updates the existing item (same id)
 
     tx.oncomplete = loadItems;
   };
@@ -91,36 +79,44 @@ function editItem(id, span, editBtn) {
   });
 }
 
-// função "carregar itens"
+// "remove item" function
+function removeItem(id) {
+  const tx = db.transaction("items", "readwrite");
+  const store = tx.objectStore("items");
+  store.delete(id);
+
+  tx.oncomplete = loadItems;
+}
+
+// "load items" function
 function loadItems() {
   const list = document.getElementById("itemList");
-  list.innerHTML = ""; // limpa a lista antes de carregar
+  list.innerHTML = "";
 
-  const tx = db.transaction("items", "readonly"); // transação de leitura
+  const tx = db.transaction("items", "readonly");
   const store = tx.objectStore("items");
-  const request = store.getAll(); // busca todos os itens do bd
+  const request = store.getAll();
 
-  request.onsuccess = () => { // arrow function
+  request.onsuccess = () => {
     request.result.forEach(item => {
-      const li = document.createElement("li"); // cria li
+      const li = document.createElement("li");
 
-      const span = document.createElement("span"); // texto do item
+      const span = document.createElement("span");
       span.textContent = item.name;
 
-      const actions = document.createElement("div"); // agrupa os botões
+      const actions = document.createElement("div");
       actions.className = "actions";
 
-      const editBtn = document.createElement("button"); // botão de editar
+      const editBtn = document.createElement("button");
       editBtn.textContent = "✏️";
       editBtn.className = "edit-btn";
       editBtn.onclick = () => editItem(item.id, span, editBtn);
 
-      const removeBtn = document.createElement("button"); // botão de remover
+      const removeBtn = document.createElement("button");
       removeBtn.textContent = "❌";
       removeBtn.className = "remove-btn";
-      removeBtn.onclick = () => removeItem(item.id); // associa ao id correto
+      removeBtn.onclick = () => removeItem(item.id);
 
-      // insere tudo na tela
       actions.appendChild(editBtn);
       actions.appendChild(removeBtn);
       li.appendChild(span);
